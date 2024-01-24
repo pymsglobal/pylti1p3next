@@ -58,7 +58,7 @@ class DjangoDynamicRegistration(DynamicRegistration):
         """
             Get the name of the platform this tool is registering with.
         """
-        return openid_configuration.get("https://purl.imsglobal.org/spec/lti-platform-configuration",{}).get("product_family_code",'')
+        return openid_configuration.get("https://purl.imsglobal.org/spec/lti-platform-configuration",{}).get("name",'')
 
     def complete_registration(self, openid_configuration: Dict[str, Any], openid_registration: Dict[str, Any]):
         title = self.get_platform_name(openid_configuration)
