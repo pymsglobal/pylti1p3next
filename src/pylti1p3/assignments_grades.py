@@ -1,3 +1,4 @@
+from collections.abc import Generator, Callable
 import typing as t
 import typing_extensions as te
 from .exception import LtiException
@@ -139,7 +140,7 @@ class AssignmentsGradesService:
             raise LtiException("Unknown response type received for line items")
         return lineitems["body"], lineitems["next_page_url"]
 
-    def get_lineitems(self) -> list:
+    def get_lineitems(self) -> Generator[TLineItem]:
         """
         Get list of all available line items.
 
@@ -150,9 +151,21 @@ class AssignmentsGradesService:
 
         while lineitems_url:
             lineitems, lineitems_url = self.get_lineitems_page(lineitems_url)
-            lineitems_res_lst.extend(lineitems)
+            yield from lineitems
 
-        return lineitems_res_lst
+    def find_lineitem_satisfying(
+        self, condition: Callable[[TLineItem], bool]
+    ) -> t.Optional[LineItem]:
+        """
+        Find line item matching the given condition.
+
+        :param condition: A function which takes a line item's dict representation and returns a bool.
+        :return: LineItem instance or None
+        """
+        for lineitem_dict in self.get_lineitems():
+            if condition(lineitem_dict):
+                return LineItem(lineitem_dict)
+        return None
 
     def find_lineitem(self, prop_name: str, prop_value: t.Any) -> t.Optional[LineItem]:
         """
@@ -162,15 +175,7 @@ class AssignmentsGradesService:
         :param prop_value: property value
         :return: LineItem instance or None
         """
-        lineitems_url: t.Optional[str] = self._service_data["lineitems"]
-
-        while lineitems_url:
-            lineitems, lineitems_url = self.get_lineitems_page(lineitems_url)
-            for lineitem in lineitems:
-                lineitem_prop_value = lineitem.get(prop_name)
-                if lineitem_prop_value == prop_value:
-                    return LineItem(lineitem)
-        return None
+        return self.find_lineitem_satisfying(lambda x: x.get(prop_name) == prop_value)
 
     def find_lineitem_by_id(self, ln_id: str) -> t.Optional[LineItem]:
         """
@@ -211,7 +216,10 @@ class AssignmentsGradesService:
         return self.find_lineitem("resourceId", resource_id)
 
     def find_or_create_lineitem(
-        self, new_lineitem: LineItem, find_by: str = "tag"
+        self,
+        new_lineitem: LineItem,
+        find_by: str = "tag",
+        condition: t.Optional[Callable[[TLineItem], bool]] = None,
     ) -> LineItem:
         """
         Try to find line item using ID or Tag. New lime item will be created if nothing is found.
@@ -220,7 +228,9 @@ class AssignmentsGradesService:
         :param find_by: str ("tag"/"id")
         :return: LineItem instance (based on response from the LTI platform)
         """
-        if find_by == "tag":
+        if condition is not None:
+            lineitem = self.find_lineitem_satisfying(condition)
+        elif find_by == "tag":
             tag = new_lineitem.get_tag()
             if not tag:
                 raise LtiException("Tag value is not specified")
