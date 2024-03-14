@@ -58,7 +58,7 @@ class DjangoDynamicRegistration(DynamicRegistration):
         """
             Get the name of the platform this tool is registering with.
         """
-        return openid_configuration.get("https://purl.imsglobal.org/spec/lti-platform-configuration",{}).get("name",'')
+        return openid_configuration.get("https://purl.imsglobal.org/spec/lti-platform-configuration",{}).get("product_family_code",'')
 
     def complete_registration(self, openid_configuration: Dict[str, Any], openid_registration: Dict[str, Any]):
         title = self.get_platform_name(openid_configuration)
@@ -66,7 +66,12 @@ class DjangoDynamicRegistration(DynamicRegistration):
         tool_key = self.get_issuer_keys(openid_configuration['issuer'])
 
         tool_spec = "https://purl.imsglobal.org/spec/lti-tool-configuration"
-        deployment_ids = [openid_registration[tool_spec]['deployment_id']]
+        deployment_id = openid_registration[tool_spec].get('deployment_id')
+
+        deployment_ids = []
+
+        if deployment_id is not None:
+            deployment_ids.append(deployment_id)
 
         platform_config, created = LtiTool.objects.update_or_create(
             issuer=openid_configuration['issuer'],

@@ -237,14 +237,22 @@ class DynamicRegistration:
             # TODO - check openid_configuration is valid.
     
             tool_provider_registration_endpoint = openid_configuration['registration_endpoint']
+
             registration_data = self.lti_registration_data()
+
+            headers = {
+                'Accept': 'application/json'
+            }
+
+            if registration_token is not None:
+                headers['Authorization'] = 'Bearer ' + registration_token
+
             response = session.post(
                 tool_provider_registration_endpoint,
-                json = registration_data,
-                headers = {
-                    'Authorization': 'Bearer ' + registration_token,
-                    'Accept': 'application/json'
-                })
+                headers = headers,
+                json = registration_data
+            )
+
             openid_registration = response.json()
 
         conf_spec = "https://purl.imsglobal.org/spec/lti-platform-configuration"
