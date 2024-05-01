@@ -17,6 +17,8 @@ import requests
 from typing import Any, Dict
 from urllib.parse import urlparse
 
+from .exception import LtiException
+
 def generate_key_pair(key_size : int = 4096) -> Dict[str, str]:
     """
     Generates an RSA key pair.
@@ -229,6 +231,8 @@ class DynamicRegistration:
         openid_configuration_endpoint = self.get_openid_configuration_endpoint()
         registration_token = self.get_registration_token()
         
+        if not openid_configuration_endpoint:
+            raise LtiException("No OpenID configuration endpoint was specified.")
 
         with requests.Session() as session:
             resp = session.get(openid_configuration_endpoint)
