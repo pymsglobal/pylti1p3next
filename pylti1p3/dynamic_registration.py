@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 import json
 import re
 import requests
+from requests.exceptions import RequestException
 from typing import Any, Dict
 from urllib.parse import urlparse
 
@@ -221,6 +222,18 @@ class DynamicRegistration:
         """
         raise NotImplementedError
 
+    def get_openid_configuration(self) -> Dict[str, Any]:
+        openid_configuration_endpoint = self.get_openid_configuration_endpoint()
+
+        with requests.Session() as session:
+            resp = session.get(openid_configuration_endpoint)
+            try:
+                openid_configuration = resp.json()
+            except RequestException as e:
+                raise LtiException(f"The OpenID configuration data is invalid: {e}")
+
+        return openid_configuration
+
     def register(self) -> Dict[str, Any]:
         """
             Perform the tool registration.
@@ -234,9 +247,9 @@ class DynamicRegistration:
         if not openid_configuration_endpoint:
             raise LtiException("No OpenID configuration endpoint was specified.")
 
+        openid_configuration = self.get_openid_configuration()
+
         with requests.Session() as session:
-            resp = session.get(openid_configuration_endpoint)
-            openid_configuration = resp.json()
 
             # TODO - check openid_configuration is valid.
     
@@ -295,6 +308,7 @@ class DynamicRegistration:
                     <script>
                         (window.opener || window.parent).postMessage({subject:'org.imsglobal.lti.close'}, '*');
                     </script>
+                    <p>The registration is now complete. You can close this window and return to the registered platform.</p>
                 </body>
             </html>
         """
