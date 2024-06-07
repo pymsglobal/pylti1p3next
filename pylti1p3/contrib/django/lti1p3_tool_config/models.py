@@ -1,6 +1,4 @@
 # mypy: ignore-errors
-import json
-
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.db import models
@@ -20,7 +18,7 @@ class LtiToolKey(models.Model):
     public_key = models.TextField(
         null=True, blank=True, help_text=_("Tool's generated Public key")
     )
-    public_jwk = models.TextField(
+    public_jwk = models.JSONField(
         null=True,
         blank=True,
         help_text=_(
@@ -33,7 +31,7 @@ class LtiToolKey(models.Model):
     ):  # pylint: disable=arguments-differ,signature-differs
         if self.public_key:
             public_jwk_dict = Registration.get_jwk(self.public_key)
-            self.public_jwk = json.dumps(public_jwk_dict)
+            self.public_jwk = public_jwk_dict
         else:
             self.public_key = None
             self.public_jwk = None
@@ -102,25 +100,27 @@ class LtiTool(models.Model):
         help_text=_("The platform's JWKS endpoint. Value provided by LTI 1.3 Platform"),
         validators=[URLValidator()],
     )
-    key_set = models.TextField(
+    key_set = models.JSONField(
         null=True,
         blank=True,
         help_text=_(
-            "In case if platform's JWKS endpoint somehow "
+            "In case the platform's JWKS endpoint is somehow "
             "unavailable you may paste JWKS here. "
             "Value provided by LTI 1.3 Platform"
         ),
     )
+
     tool_key = models.ForeignKey(
         LtiToolKey, on_delete=models.PROTECT, related_name="lti_tools"
     )
-    deployment_ids = models.TextField(
+    deployment_ids = models.JSONField(
         null=False,
         blank=False,
+        default=list,
         help_text=_(
             "List of Deployment IDs. "
             'Example: ["test-id-1", "test-id-2", ...] '
-            "Each value is provided by LTI 1.3 Platform. "
+            "Each value is provided by the LTI 1.3 Platform. "
         ),
     )
 
@@ -137,7 +137,7 @@ class LtiTool(models.Model):
         if self.key_set:
             key_set_valid = False
             try:
-                key_set_data = json.loads(self.key_set)
+                key_set_data = self.key_set
                 if isinstance(key_set_data, dict):
                     key_set_valid = True
             except ValueError:
@@ -147,7 +147,7 @@ class LtiTool(models.Model):
 
         deployment_ids_valid = False
         try:
-            deployment_ids_data = json.loads(self.deployment_ids)
+            deployment_ids_data = self.deployment_ids
             if isinstance(deployment_ids_data, list):
                 deployment_ids_valid = True
         except ValueError:
@@ -169,8 +169,8 @@ class LtiTool(models.Model):
             "auth_token_url": self.auth_token_url,
             "auth_audience": self.auth_audience,
             "key_set_url": self.key_set_url,
-            "key_set": json.loads(self.key_set) if self.key_set else None,
-            "deployment_ids": json.loads(self.deployment_ids)
+            "key_set": self.key_set if self.key_set else None,
+            "deployment_ids": self.deployment_ids
             if self.deployment_ids
             else [],
         }

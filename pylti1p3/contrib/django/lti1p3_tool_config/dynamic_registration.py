@@ -1,6 +1,5 @@
 from   django.urls import reverse_lazy
 from   django.templatetags.static import static
-import json
 from   .models import LtiTool, LtiToolKey
 from   pylti1p3.dynamic_registration import DynamicRegistration, generate_key_pair
 from   typing import Any, Dict
@@ -83,7 +82,7 @@ class DjangoDynamicRegistration(DynamicRegistration):
                 'auth_audience': openid_configuration['token_endpoint'],
                 'key_set_url': openid_configuration['jwks_uri'],
                 'tool_key': tool_key,
-                'deployment_ids': json.dumps(deployment_ids),
+                'deployment_ids': deployment_ids,
             }
         )
 
