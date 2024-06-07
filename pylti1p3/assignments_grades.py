@@ -146,7 +146,6 @@ class AssignmentsGradesService:
 
         :return: list
         """
-        lineitems_res_lst = []
         lineitems_url: t.Optional[str] = self._service_data["lineitems"]
 
         while lineitems_url:
@@ -214,8 +213,10 @@ class AssignmentsGradesService:
         return self.find_lineitem("resourceId", resource_id)
 
     def find_or_create_lineitem(
-            self, new_lineitem: LineItem, find_by: str = "tag", condition: t.Optional[Callable[[TLineItem], bool]] = None
-        ) -> LineItem:
+            self,
+            new_lineitem: LineItem, find_by: str = "tag",
+            condition: t.Optional[Callable[[TLineItem], bool]] = None
+    ) -> LineItem:
         """
         Try to find line item using ID or Tag. New lime item will be created if nothing is found.
 

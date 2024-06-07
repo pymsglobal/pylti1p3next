@@ -1,8 +1,12 @@
-from   django.urls import reverse_lazy
-from   django.templatetags.static import static
-from   .models import LtiTool, LtiToolKey
-from   pylti1p3.dynamic_registration import DynamicRegistration, generate_key_pair
-from   typing import Any, Dict
+from typing import Any, Dict
+
+from django.urls import reverse_lazy
+from django.templatetags.static import static
+
+from pylti1p3.dynamic_registration import DynamicRegistration, generate_key_pair
+
+from .models import LtiTool, LtiToolKey
+
 
 class DjangoDynamicRegistration(DynamicRegistration):
 
@@ -13,7 +17,7 @@ class DjangoDynamicRegistration(DynamicRegistration):
     launch_url = reverse_lazy('lti:launch')
 
     # The path of the tool's logo image, under ``STATIC_ROOT``.
-    logo_file = 'lti/logo.png'  
+    logo_file = 'lti/logo.png'
 
     def __init__(self, request):
         super().__init__()
@@ -57,7 +61,8 @@ class DjangoDynamicRegistration(DynamicRegistration):
         """
             Get the name of the platform this tool is registering with.
         """
-        return openid_configuration.get("https://purl.imsglobal.org/spec/lti-platform-configuration",{}).get("product_family_code",'')
+        return openid_configuration.get("https://purl.imsglobal.org/spec/lti-platform-configuration", {}) \
+            .get("product_family_code", '')
 
     def complete_registration(self, openid_configuration: Dict[str, Any], openid_registration: Dict[str, Any]):
         title = self.get_platform_name(openid_configuration)
@@ -72,10 +77,10 @@ class DjangoDynamicRegistration(DynamicRegistration):
         if deployment_id is not None:
             deployment_ids.append(deployment_id)
 
-        platform_config, created = LtiTool.objects.update_or_create(
+        platform_config, _created = LtiTool.objects.update_or_create(
             issuer=openid_configuration['issuer'],
             client_id=openid_registration['client_id'],
-            defaults = {
+            defaults={
                 'title': title,
                 'auth_login_url': openid_configuration['authorization_endpoint'],
                 'auth_token_url': openid_configuration['token_endpoint'],
@@ -86,10 +91,10 @@ class DjangoDynamicRegistration(DynamicRegistration):
             }
         )
 
-        platform_config.save() # type: ignore
+        platform_config.save()  # type: ignore
         return platform_config
 
-    def keys_for_issuer(issuer_name: str) -> LtiToolKey:
+    def keys_for_issuer(self, issuer_name: str) -> LtiToolKey:
         """
             Get the public and private keys for a given issuer.
 
@@ -97,9 +102,8 @@ class DjangoDynamicRegistration(DynamicRegistration):
         """
         key_obj, created = LtiToolKey.objects.get_or_create(name=issuer_name)
         if created:
-            key_pair = generate_key_pair()
-            key_obj.private_key = key_pair['private']
-            key_obj.public_key = key_pair['public']
+            private_key, public_key = generate_key_pair()
+            key_obj.private_key = private_key
+            key_obj.public_key = public_key
             key_obj.save()
         return key_obj
-

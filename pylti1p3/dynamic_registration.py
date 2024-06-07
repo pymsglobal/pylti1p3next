@@ -3,24 +3,23 @@
 
     Written with reference to:
 
-    * https://www.imsglobal.org/spec/lti-dr/v1p0 - Learning Tools Interoperability (LTI) Dynamic Registration Specification
+    * https://www.imsglobal.org/spec/lti-dr/v1p0
+        - Learning Tools Interoperability (LTI) Dynamic Registration Specification
     * https://gist.github.com/onemenzel/32d661649863a48efafce9e3fbbd6253 by Lukas Menzel / onamenzel
     * https://moodlelti.theedtech.dev/dynreg/ - "LTI Advantage Automatic Registration" by Claude Vervoort
 """
 
-import base64
+from typing import Any, Dict
+
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-import json
-import re
 import requests
 from requests.exceptions import RequestException
-from typing import Any, Dict
-from urllib.parse import urlparse
 
 from .exception import LtiException
 
-def generate_key_pair(key_size : int = 4096) -> Dict[str, str]:
+
+def generate_key_pair(key_size : int = 4096) -> tuple[str, str]:
     """
     Generates an RSA key pair.
 
@@ -47,6 +46,7 @@ def generate_key_pair(key_size : int = 4096) -> Dict[str, str]:
     ).decode()
 
     return (private_key_str, public_key_str)
+
 
 class DynamicRegistration:
     """
@@ -110,7 +110,8 @@ class DynamicRegistration:
         """
             Get the list of scopes that the tool would like.
 
-            Each entry should be a scope name following the naming conventions described at https://www.imsglobal.org/spec/security/v1p0/#h_scope-naming-conventions.
+            Each entry should be a scope name following the naming conventions described at
+            https://www.imsglobal.org/spec/security/v1p0/#h_scope-naming-conventions.
 
             e.g.::
 
@@ -148,11 +149,12 @@ class DynamicRegistration:
         """
         raise NotImplementedError
 
-    def get_messages(self) -> list[Dict[str,str]]:
+    def get_messages(self) -> list[Dict[str, str]]:
         """
             A list of messages supported by this tool.
 
-            Each should be a dict containing keys as described in the ``message`` table at https://www.imsglobal.org/spec/lti-dr/v1p0#tool-configuration-0.
+            Each should be a dict containing keys as described in the ``message`` table at
+            https://www.imsglobal.org/spec/lti-dr/v1p0#tool-configuration-0.
 
             e.g.::
 
@@ -182,7 +184,8 @@ class DynamicRegistration:
         """
             Get the registration data object to send back to the platform.
 
-            Must return an object matching the specification described at https://www.imsglobal.org/spec/lti-dr/v1p0#tool-configuration.
+            Must return an object matching the specification described at
+            https://www.imsglobal.org/spec/lti-dr/v1p0#tool-configuration.
         """
 
         return {
@@ -197,7 +200,7 @@ class DynamicRegistration:
 
             'scope': ' '.join(self.get_scopes()),
             'https://purl.imsglobal.org/spec/lti-tool-configuration': {
-                'domain': self.get_domain(), # get_host includes the port.
+                'domain': self.get_domain(),  # get_host includes the port.
                 'target_link_uri': self.get_target_link_uri(),
                 'claims': self.get_claims(),
                 'messages': self.get_messages(),
@@ -230,7 +233,7 @@ class DynamicRegistration:
             try:
                 openid_configuration = resp.json()
             except RequestException as e:
-                raise LtiException(f"The OpenID configuration data is invalid: {e}")
+                raise LtiException(f"The OpenID configuration data is invalid: {e}") from e
 
         return openid_configuration
 
@@ -238,12 +241,12 @@ class DynamicRegistration:
         """
             Perform the tool registration.
 
-            Returns the OpenID registration response as described 
+            Returns the OpenID registration response as described.
         """
 
         openid_configuration_endpoint = self.get_openid_configuration_endpoint()
         registration_token = self.get_registration_token()
-        
+
         if not openid_configuration_endpoint:
             raise LtiException("No OpenID configuration endpoint was specified.")
 
@@ -252,7 +255,7 @@ class DynamicRegistration:
         with requests.Session() as session:
 
             # TODO - check openid_configuration is valid.
-    
+
             tool_provider_registration_endpoint = openid_configuration['registration_endpoint']
 
             registration_data = self.lti_registration_data()
@@ -266,8 +269,8 @@ class DynamicRegistration:
 
             response = session.post(
                 tool_provider_registration_endpoint,
-                headers = headers,
-                json = registration_data
+                headers=headers,
+                json=registration_data
             )
 
             openid_registration = response.json()
@@ -289,7 +292,8 @@ class DynamicRegistration:
 
             :param openid_configuration: the public configuration data returned by the platform.
 
-            :param openid_registration: the object returned by the platform after registration, as described by https://www.imsglobal.org/spec/lti-dr/v1p0#tool-configuration-from-the-platform.
+            :param openid_registration: the object returned by the platform after registration, as described by
+            https://www.imsglobal.org/spec/lti-dr/v1p0#tool-configuration-from-the-platform.
 
             :returns: an object representing the tool representation.
         """
@@ -298,7 +302,8 @@ class DynamicRegistration:
 
     def complete_html(self):
         """
-            HTML for the final step of the process: it should make a JavaScript postMessage call to the platform, telling it that the registratoin process is complete.
+            HTML for the final step of the process: it should make a JavaScript postMessage call to the platform,
+            telling it that the registration process is complete.
         """
 
         return """
@@ -311,5 +316,4 @@ class DynamicRegistration:
                     <p>The registration is now complete. You can close this window and return to the registered platform.</p>
                 </body>
             </html>
-        """
-
+        """  # noqa: E501
