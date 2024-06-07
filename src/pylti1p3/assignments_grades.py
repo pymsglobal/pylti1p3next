@@ -250,8 +250,8 @@ class AssignmentsGradesService:
             raise LtiException("Can't create lineitem: Missing required scope")
 
         response = self._service_connector.make_service_request(
-            self._service_data["scope"],
-            self._service_data["lineitems"],
+            scopes=self._service_data["scope"],
+            url=self._service_data["lineitems"],
             is_post=True,
             data=new_lineitem.get_value(),
             content_type="application/vnd.ims.lis.v2.lineitem+json",

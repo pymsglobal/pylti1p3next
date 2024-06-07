@@ -10,6 +10,7 @@ class FlaskOIDCLogin(OIDCLogin):
         self,
         request,
         tool_config,
+        *,
         session_service=None,
         cookie_service=None,
         launch_data_storage=None,
@@ -21,7 +22,11 @@ class FlaskOIDCLogin(OIDCLogin):
             session_service if session_service else FlaskSessionService(request)
         )
         super().__init__(
-            request, tool_config, session_service, cookie_service, launch_data_storage
+            request=request,
+            tool_config=tool_config,
+            session_service=session_service,
+            cookie_service=cookie_service,
+            launch_data_storage=launch_data_storage,
         )
 
     def get_redirect(self, url):
