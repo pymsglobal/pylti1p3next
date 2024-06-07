@@ -10,6 +10,7 @@ class DjangoMessageLaunch(MessageLaunch):
         self,
         request,
         tool_config,
+        *,
         session_service=None,
         cookie_service=None,
         launch_data_storage=None,
@@ -27,12 +28,12 @@ class DjangoMessageLaunch(MessageLaunch):
             session_service if session_service else DjangoSessionService(request)
         )
         super().__init__(
-            django_request,
-            tool_config,
-            session_service,
-            cookie_service,
-            launch_data_storage,
-            requests_session,
+            request=django_request,
+            tool_config=tool_config,
+            session_service=session_service,
+            cookie_service=cookie_service,
+            launch_data_storage=launch_data_storage,
+            requests_session=requests_session,
         )
 
     def _get_request_param(self, key):
