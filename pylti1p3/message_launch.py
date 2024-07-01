@@ -728,13 +728,6 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         client_id = self.get_client_id()
         deployment_id = self._get_deployment_id()
         tool_config: ToolConfAbstract = self._tool_config
-        print(f""">>>>>>>>>>>>
-
-        Validate deployment
-        Iss: {iss}
-        Client_id: {client_id}
-        Deployment_id: {deployment_id}
-""")
 
         # Find deployment.
         if tool_config.check_iss_has_one_client(iss):
