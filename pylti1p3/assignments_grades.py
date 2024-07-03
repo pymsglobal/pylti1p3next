@@ -154,14 +154,14 @@ class AssignmentsGradesService:
 
     def find_lineitem_satisfying(self, condition: Callable[[TLineItem], bool]) -> t.Optional[LineItem]:
         """
-        Find line item matching the given conditoin.
+        Find line item matching the given condition.
 
         :param condition: A function which takes a line item's dict representation and returns a bool.
         :return: LineItem instance or None
         """
-        for lineitem in self.get_lineitems():
-            if condition(lineitem):
-                return LineItem(lineitem)
+        for lineitem_dict in self.get_lineitems():
+            if condition(lineitem_dict):
+                return LineItem(lineitem_dict)
         return None
 
     def find_lineitem(self, prop_name: str, prop_value: t.Any) -> t.Optional[LineItem]:
