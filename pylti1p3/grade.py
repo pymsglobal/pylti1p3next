@@ -1,10 +1,19 @@
+from datetime import datetime
 import json
 import typing as t
 from .exception import LtiException
 
 
-TExtaClaims = t.Mapping[str, t.Any]
+TExtraClaims = t.Mapping[str, t.Any]
 
+def remove_nones(value: dict) -> dict:
+    return {k: remove_nones(v) if isinstance(v,dict) else v for k,v in value.items() if v is not None}
+
+def format_time(t: str | datetime) -> str:
+    if isinstance(t, datetime):
+        return t.strftime('%Y-%m-%dT%H:%M:%S+0000')
+    else:
+        return t
 
 class Grade:
     _score_given: t.Optional[float] = None
@@ -12,9 +21,11 @@ class Grade:
     _activity_progress: t.Optional[str] = None
     _grading_progress: t.Optional[str] = None
     _timestamp: t.Optional[str] = None
+    _started_at: t.Optional[str] = None
+    _submitted_at: t.Optional[str] = None
     _user_id: t.Optional[str] = None
     _comment: t.Optional[str] = None
-    _extra_claims: t.Optional[TExtaClaims] = None
+    _extra_claims: t.Optional[TExtraClaims] = None
 
     def _validate_score(self, score_value) -> t.Optional[str]:
         if not isinstance(score_value, (int, float)):
@@ -87,11 +98,37 @@ class Grade:
         """
         return self._timestamp
 
-    def set_timestamp(self, value: str) -> "Grade":
+    def set_timestamp(self, value: str | datetime) -> "Grade":
         """
         https://www.imsglobal.org/spec/lti-ags/v2p0/#timestamp
         """
-        self._timestamp = value
+        self._timestamp = format_time(value)
+        return self
+
+    def get_started_at(self) -> t.Optional[str]:
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#startedat-optional
+        """
+        return self._started_at
+
+    def set_started_at(self, value: str | datetime) -> "Grade":
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#startedat-optional
+        """
+        self._started_at = format_time(value)
+        return self
+
+    def get_submitted_at(self) -> t.Optional[str]:
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#submittedat-optional
+        """
+        return self._submitted_at
+
+    def set_submitted_at(self, value: str | datetime) -> "Grade":
+        """
+        https://www.imsglobal.org/spec/lti-ags/v2p0/#submittedat-optional
+        """
+        self._submitted_at = format_time(value)
         return self
 
     def get_user_id(self) -> t.Optional[str]:
@@ -120,11 +157,11 @@ class Grade:
         self._comment = value
         return self
 
-    def set_extra_claims(self, value: TExtaClaims) -> "Grade":
+    def set_extra_claims(self, value: TExtraClaims) -> "Grade":
         self._extra_claims = value
         return self
 
-    def get_extra_claims(self) -> t.Optional[TExtaClaims]:
+    def get_extra_claims(self) -> t.Optional[TExtraClaims]:
         return self._extra_claims
 
     def get_value(self) -> str:
@@ -137,7 +174,12 @@ class Grade:
             "userId": self._user_id,
             "comment": self._comment,
         }
+        if self._started_at is not None or self._submitted_at is not None:
+            data["submission"] = {
+                "startedAt": self._started_at,
+                "submittedAt": self._submitted_at,
+            }
         if self._extra_claims is not None:
             data.update(self._extra_claims)
 
-        return json.dumps({k: v for k, v in data.items() if v is not None})
+        return json.dumps(remove_nones(data))
