@@ -148,9 +148,17 @@ class AssignmentsGradesService:
         """
         lineitems_url: t.Optional[str] = self._service_data["lineitems"]
 
-        while lineitems_url:
-            lineitems, lineitems_url = self.get_lineitems_page(lineitems_url)
-            yield from lineitems
+        lineitem_pages = self._service_connector.get_paginated_data(
+            self._service_data['scope'],
+            lineitems_url,
+            accept="application/vnd.ims.lis.v2.lineitemcontainer+json",
+        )
+
+        for page in lineitem_pages:
+            if not isinstance(page['body'], list):
+                raise LtiException("Unknown response type received for line items")
+
+            yield from page['body']
 
     def find_lineitem_satisfying(self, condition: Callable[[TLineItem], bool]) -> t.Optional[LineItem]:
         """
@@ -279,7 +287,7 @@ class AssignmentsGradesService:
 
         return created_lineitem
 
-    def get_grades(self, lineitem: t.Optional[LineItem] = None) -> list:
+    def get_grades(self, lineitem: t.Optional[LineItem] = None) -> Generator:
         """
         Return all grades for the passed line item (across all users enrolled in the line item's context).
 
@@ -298,14 +306,16 @@ class AssignmentsGradesService:
             return []
 
         results_url = self._add_url_path_ending(lineitem_id, "results")
-        scores = self._service_connector.make_service_request(
+        score_pages = self._service_connector.get_paginated_data(
             self._service_data["scope"],
             results_url,
             accept="application/vnd.ims.lis.v2.resultcontainer+json",
         )
-        if not isinstance(scores["body"], list):
-            raise LtiException("Unknown response type received for results")
-        return scores["body"]
+        for page in score_pages:
+            if not isinstance(page['body'], list):
+                raise LtiException("Unknown response type received for results")
+
+            yield from page['body']
 
     @staticmethod
     def _add_url_path_ending(url: str, url_path_ending: str) -> str:
