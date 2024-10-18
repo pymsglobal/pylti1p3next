@@ -1,8 +1,8 @@
+from django.http import HttpRequest
 from pylti1p3.request import Request
 
 
 class DjangoRequest(Request):
-    request = None
     _post_only = False
     _default_params = None
 
@@ -10,7 +10,12 @@ class DjangoRequest(Request):
     def session(self):
         return self.request.session
 
-    def __init__(self, request, post_only=False, default_params=None):
+    def __init__(
+        self,
+        request: HttpRequest,
+        post_only: bool = False,
+        default_params=None,
+    ):
         self.request = request
         self._post_only = post_only
         self._default_params = default_params if default_params else {}
