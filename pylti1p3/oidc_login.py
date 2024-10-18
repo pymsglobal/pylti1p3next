@@ -1,6 +1,7 @@
 import typing as t
 import uuid
 from abc import ABCMeta, abstractmethod
+from collections.abc import Mapping
 from urllib.parse import urlencode
 
 from .actions import Action
@@ -34,10 +35,10 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
     _cookies_check: bool = False
     _cookies_check_loading_text: str = "Loading..."
     _cookies_unavailable_msg_main_text: str = (
-        "Your browser prohibits to save cookies in the iframes."
+        "Your browser does not allow cookies to be set in this page."
     )
     _cookies_unavailable_msg_click_text: str = (
-        "Click here to open content in the new tab."
+        "Click here to open the content in a new tab."
     )
     _state_params: t.Dict[str, object] = {}
 
@@ -227,7 +228,7 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
         """
         return []
 
-    def get_cookies_allowed_js_check(self) -> str:
+    def get_cookies_allowed_js_check_params(self) -> tuple[str, Mapping[str,str]]:
         protocol = "https" if self._request.is_secure() else "http"
         params_lst = [
             "iss",
@@ -245,6 +246,11 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
             param_value = self._get_request_param(param_key)
             if param_value:
                 params[param_key] = param_value
+
+        return protocol, params
+
+    def get_cookies_allowed_js_check(self) -> str:
+        protocol, params = self.get_cookies_allowed_js_check_params()
 
         page = CookiesAllowedCheckPage(
             params,

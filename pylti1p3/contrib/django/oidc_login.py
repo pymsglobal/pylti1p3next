@@ -1,4 +1,6 @@
 from django.http import HttpResponse  # type: ignore
+from django.shortcuts import render
+from django.template import TemplateDoesNotExist
 from pylti1p3.oidc_login import OIDCLogin
 from pylti1p3.request import Request
 
@@ -39,3 +41,21 @@ class DjangoOIDCLogin(OIDCLogin):
 
     def get_response(self, html):
         return HttpResponse(html)
+
+    def get_cookies_allowed_js_check(self) -> str:
+        protocol, params = self.get_cookies_allowed_js_check_params()
+
+        try:
+            return render(
+                self._request._request, 
+                'pylti1p3/cookies_allowed_js_check.html', 
+                {
+                    'protocol': protocol,
+                    'params': params,
+                    'main_text': self._cookies_unavailable_msg_main_text,
+                    'click_text': self._cookies_unavailable_msg_click_text,
+                    'loading_text': self._cookies_check_loading_text,
+                }
+            )
+        except TemplateDoesNotExist:
+            return super().get_cookies_allowed_js_check()
