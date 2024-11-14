@@ -214,6 +214,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         cookie_service: t.Optional[COOK] = None,
         launch_data_storage: t.Optional[LaunchDataStorage[t.Any]] = None,
         requests_session: t.Optional[requests.Session] = None,
+        service_connector_cls: type[ServiceConnector] = ServiceConnector,
     ):
         self._request = request
         self._tool_config = tool_config
@@ -232,6 +233,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         self._restored = False
         self._public_key_cache_data_storage = None
         self._public_key_cache_lifetime = None
+        self._service_connector_cls = service_connector_cls
         if requests_session:
             self._requests_session = requests_session
         else:
@@ -292,6 +294,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
         cookie_service: t.Optional[COOK] = None,
         launch_data_storage: t.Optional[LaunchDataStorage[t.Any]] = None,
         requests_session: t.Optional[requests.Session] = None,
+        service_connector_cls: type[ServiceConnector] = ServiceConnector,
     ) -> "MessageLaunch":
         obj = cls(
             request,
@@ -300,6 +303,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
             cookie_service=cookie_service,
             launch_data_storage=launch_data_storage,
             requests_session=requests_session,
+            service_connector_cls=service_connector_cls,
         )
         launch_data = obj.get_session_service().get_launch_data(launch_id)
         if not launch_data:
@@ -374,7 +378,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
     def get_service_connector(self) -> ServiceConnector:
         assert self._registration is not None, "Registration not yet set"
-        return ServiceConnector(self._registration, self._requests_session)
+        return self._service_connector_cls(self._registration, self._requests_session)
 
     def has_nrps(self) -> bool:
         """

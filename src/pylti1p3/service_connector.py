@@ -30,7 +30,6 @@ REQUESTS_USER_AGENT = "PyLTI1p3-client"
 
 class ServiceConnector:
     _registration: Registration
-    _access_tokens: t.Dict[str, str]
 
     def __init__(
         self,
@@ -38,23 +37,37 @@ class ServiceConnector:
         requests_session: t.Optional[requests.Session] = None,
     ):
         self._registration = registration
-        self._access_tokens = {}
         if requests_session:
             self._requests_session = requests_session
         else:
             self._requests_session = requests.Session()
             self._requests_session.headers["User-Agent"] = REQUESTS_USER_AGENT
 
-    def get_access_token(self, scopes: t.Sequence[str]) -> str:
-        # Don't fetch the same key more than once
-        scopes = sorted(scopes)
-        scopes_str: str = "|".join(scopes)
+    def _scope_key(self, scopes: t.Iterable[str]) -> str:
+        issuer = self._registration.get_issuer()
+        scopes_str: str = "|".join(
+            ([issuer] if issuer is not None else []) + sorted(scopes)
+        )
         scopes_bytes = scopes_str.encode("utf-8")
 
         scope_key = hashlib.md5(scopes_bytes).hexdigest()
+        return scope_key
 
-        if scope_key in self._access_tokens:
-            return self._access_tokens[scope_key]
+    def _get_cached_access_token(self, scope_key: str) -> t.Union[str, None]:
+        raise NotImplementedError
+
+    def _cache_access_token(self, scope_key: str, access_token: str, expires_in: float):
+        raise NotImplementedError
+
+    def get_access_token(self, scopes: t.Sequence[str]) -> str:
+        # Don't fetch the same key more than once
+        scopes = sorted(scopes)
+
+        scope_key = self._scope_key(scopes)
+
+        cached_token = self._get_cached_access_token(scope_key)
+        if cached_token:
+            return cached_token
 
         # Build up JWT to exchange for an auth token
         client_id = self._registration.get_client_id()
@@ -97,11 +110,13 @@ class ServiceConnector:
         try:
             response = r.json()
         except requests.JSONDecodeError as err:
-            raise LtiServiceException(r) from err
             raise LtiServiceException("The platform did not return a JSON response for the access token.", r) from err
 
-        self._access_tokens[scope_key] = response["access_token"]
-        return self._access_tokens[scope_key]
+        access_token = response["access_token"]
+        self._cache_access_token(
+            scope_key, access_token, expires_in=response.get("expires_in", 0)
+        )
+        return access_token
 
     def encode_jwt(
         self,
