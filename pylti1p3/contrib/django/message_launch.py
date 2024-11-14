@@ -3,7 +3,7 @@ from pylti1p3.request import Request
 from .cookie import DjangoCookieService
 from .request import DjangoRequest
 from .session import DjangoSessionService
-
+from .service_connector import DjangoServiceConnector
 
 class DjangoMessageLaunch(MessageLaunch):
     def __init__(
@@ -33,6 +33,7 @@ class DjangoMessageLaunch(MessageLaunch):
             cookie_service,
             launch_data_storage,
             requests_session,
+            service_connector_cls=DjangoServiceConnector
         )
 
     def _get_request_param(self, key):
