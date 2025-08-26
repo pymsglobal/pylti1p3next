@@ -15,7 +15,7 @@ from .assignments_grades import AssignmentsGradesService, TAssignmentsGradersDat
 from .cookie import CookieService
 from .course_groups import CourseGroupsService, TGroupsServiceData
 from .deep_link import DeepLink, TDeepLinkData
-from .exception import LtiException, LtiJWTException, LtiMessageValidationException, LtiKeyException
+from .exception import LtiException, LtiJWTException, LtiMessageValidationException, LtiInvalidNonceException, LtiKeyException
 from .launch_data_storage.base import DisableSessionId, LaunchDataStorage
 from .message_validators import get_validators
 from .message_validators.deep_link import DeepLinkMessageValidator
@@ -669,7 +669,7 @@ class MessageLaunch(t.Generic[REQ, TCONF, SES, COOK]):
 
         res = self._session_service.check_nonce(nonce)
         if not res:
-            raise LtiMessageValidationException("Invalid Nonce.")
+            raise LtiInvalidNonceException("Invalid Nonce.")
 
         return self
 

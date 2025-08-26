@@ -28,6 +28,9 @@ class LtiMessageValidationException(LtiException):
     """
     pass
 
+class LtiInvalidNonceException(LtiMessageValidationException):
+    pass
+
 
 class LtiKeyException(LtiException):
     """
