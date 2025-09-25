@@ -266,6 +266,14 @@ class AssignmentsGradesService:
         if lineitem:
             return lineitem
 
+        created_lineitem = self.create_lineitem(new_lineitem)
+
+        return created_lineitem
+
+    def create_lineitem(self, new_lineitem: LineItem) -> LineItem:
+        """
+        Create a line item on the platform.
+        """
         if not self.can_create_lineitem():
             raise LtiException("Can't create lineitem: Missing required scope")
 
@@ -279,6 +287,7 @@ class AssignmentsGradesService:
         )
         if not isinstance(response["body"], dict):
             raise LtiException("Unknown response type received for create line item")
+
         return LineItem(t.cast(TLineItem, response["body"]))
 
     def get_grades(self, lineitem: t.Optional[LineItem] = None) -> Generator:
@@ -306,10 +315,10 @@ class AssignmentsGradesService:
             accept="application/vnd.ims.lis.v2.resultcontainer+json",
         )
         for page in score_pages:
-            if not isinstance(page['body'], list):
+            if not isinstance(page["body"], list):
                 raise LtiException("Unknown response type received for results")
 
-            yield from page['body']
+            yield from page["body"]
 
     @staticmethod
     def _add_url_path_ending(url: str, url_path_ending: str) -> str:
