@@ -66,5 +66,5 @@ class SessionService:
         else:
             raise Exception(
                 f"{self.data_storage.__class__.__name__} launch storage doesn't support "
-                f"manual change expiration of the keys"
+                f"changing the expiration time of keys"
             )

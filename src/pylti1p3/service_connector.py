@@ -108,6 +108,7 @@ class ServiceConnector:
         self,
         scopes: t.Sequence[str],
         url: str,
+        *,
         is_post: bool = False,
         data: t.Optional[str] = None,
         content_type: str = "application/json",

@@ -249,17 +249,17 @@ class AssignmentsGradesService:
         if not self.can_create_lineitem():
             raise LtiException("Can't create lineitem: Missing required scope")
 
-        created_lineitem = self._service_connector.make_service_request(
-            self._service_data["scope"],
-            self._service_data["lineitems"],
+        response = self._service_connector.make_service_request(
+            scopes=self._service_data["scope"],
+            url=self._service_data["lineitems"],
             is_post=True,
             data=new_lineitem.get_value(),
             content_type="application/vnd.ims.lis.v2.lineitem+json",
             accept="application/vnd.ims.lis.v2.lineitem+json",
         )
-        if not isinstance(created_lineitem["body"], dict):
+        if not isinstance(response["body"], dict):
             raise LtiException("Unknown response type received for create line item")
-        return LineItem(t.cast(TLineItem, created_lineitem["body"]))
+        return LineItem(t.cast(TLineItem, response["body"]))
 
     def get_grades(self, lineitem: t.Optional[LineItem] = None) -> list:
         """
