@@ -1,5 +1,5 @@
 from parameterized import parameterized
-from pylti1p3.exception import LtiException
+from pylti1p3.exception import LtiException, LtiMessageValidationException
 from .base import TestLinkBase
 from .cache import FakeCacheDataStorage
 from .django_mixin import DjangoMixin
@@ -312,7 +312,7 @@ class ResourceLinkBase(TestLinkBase):
             login_request, login_response, post_data=post_data
         )
 
-        with self.assertRaisesRegex(LtiException, '"nonce" is empty'):
+        with self.assertRaisesRegex(LtiMessageValidationException, 'The "nonce" field is empty.'):
             self._launch_with_invalid_jwt_body(
                 self._get_data_without_nonce, launch_request, tool_conf
             )
@@ -347,7 +347,10 @@ class ResourceLinkBase(TestLinkBase):
             login_request, login_response, post_data=post_data
         )
 
-        with self.assertRaisesRegex(Exception, "Unable to find deployment"):
+        with self.assertRaisesRegex(
+            LtiMessageValidationException,
+            "The deployment ID \"dsfsdfsdfsdfsd\" is not recognised."
+        ):
             self._launch_with_invalid_jwt_body(
                 self._get_data_with_invalid_deployment, launch_request, tool_conf
             )
