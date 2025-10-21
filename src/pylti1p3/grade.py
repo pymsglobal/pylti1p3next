@@ -17,7 +17,7 @@ def remove_nones(value: dict) -> dict:
 
 def format_time(time: t.Union[str, datetime]) -> str:
     if isinstance(time, datetime):
-        return time.strftime("%Y-%m-%dT%H:%M:%S+0000")
+        return time.strftime("%Y-%m-%dT%H:%M:%S%z")
 
     return time
 
