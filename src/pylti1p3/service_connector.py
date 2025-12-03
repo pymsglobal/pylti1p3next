@@ -92,8 +92,13 @@ class ServiceConnector:
         # Make request to get auth token
         r = self._requests_session.post(auth_url, data=auth_request)
         if not r.ok:
-            raise LtiServiceException(r)
-        response = r.json()
+            raise LtiServiceException("There was an error while getting an access token from the platform.", r)
+
+        try:
+            response = r.json()
+        except requests.JSONDecodeError as err:
+            raise LtiServiceException(r) from err
+            raise LtiServiceException("The platform did not return a JSON response for the access token.", r) from err
 
         self._access_tokens[scope_key] = response["access_token"]
         return self._access_tokens[scope_key]
@@ -131,7 +136,7 @@ class ServiceConnector:
             r = self._requests_session.get(url, headers=headers)
 
         if not r.ok:
-            raise LtiServiceException(r)
+            raise LtiServiceException("There was an error making a service request.", r)
 
         next_page_url = None
         link_header = r.headers.get("link", "")
