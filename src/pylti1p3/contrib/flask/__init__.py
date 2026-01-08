@@ -5,3 +5,4 @@ from .message_launch import FlaskMessageLaunch
 from .request import FlaskRequest
 from .session import FlaskSessionService
 from .launch_data_storage.cache import FlaskCacheDataStorage
+from .service_connector import FlaskServiceConnector
