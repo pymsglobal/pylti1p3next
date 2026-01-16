@@ -1,4 +1,4 @@
-name: tox
+name: test
 on: [push, pull_request]
 jobs:
   tox:
@@ -13,6 +13,11 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
-      - run: pip install --upgrade pip
-      - run: pip install tox
-      - run: tox -e py
+
+      - run: pip install -r test_reqs.txt
+      - run: flake8 .
+      - run: pylint --rcfile=pylintrc pylti1p3 tests
+      - run: mypy src
+      - run: black src --check --diff --extend-exclude ".*/migrations/.*"
+      - run: coverage run -m unittest -v tests
+      - run: coverage report -m

@@ -1,0 +1,16 @@
+black
+coverage
+django
+flake8
+flask
+jwcrypto
+mock
+mypy
+parameterized
+pyjwt
+pylint
+requests
+requests-mock
+types-requests
+django-types
+pylint-django

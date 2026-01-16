@@ -13,11 +13,6 @@ This is a fork of the `pylti1p3 <https://github.com/dmitry-viskov/pylti1.3>`_ pa
     :target: https://www.python.org/
     :alt: Python
 
-.. image:: https://github.com/pymsglobal/pylti1p3next/actions/workflows/tox.yml/badge.svg
-    :scale: 100%
-    :target: https://github.com/pymsglobal/pylti1p3next/actions
-    :alt: Build Status
-
 .. image:: https://img.shields.io/github/license/pymsglobal/pylti1p3next
     :scale: 100%
     :target: https://raw.githubusercontent.com/pymsglobal/pylti1p3next/master/LICENSE
