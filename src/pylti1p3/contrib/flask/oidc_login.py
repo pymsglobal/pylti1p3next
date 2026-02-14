@@ -34,3 +34,20 @@ class FlaskOIDCLogin(OIDCLogin):
 
     def get_response(self, html):
         return make_response(html)
+
+    def get_cookie_check_template_name(self) -> str:
+        return self.cookie_check_template_name
+
+    def get_cookies_allowed_js_check(self):
+        protocol, params = self.get_cookies_allowed_js_check_params()
+
+        return render_template(
+            self.get_cookie_check_template_name(),
+            **{
+                "protocol": protocol,
+                "params": params,
+                "main_text": self._cookies_unavailable_msg_main_text,
+                "click_text": self._cookies_unavailable_msg_click_text,
+                "loading_text": self._cookies_check_loading_text,
+            },
+        )
