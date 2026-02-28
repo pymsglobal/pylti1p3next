@@ -16,7 +16,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 import requests
 from requests.exceptions import RequestException
 
-from .exception import LtiException
+from .exception import LtiException, LtiServiceException
 
 
 def generate_key_pair(key_size: int = 4096) -> tuple[str, str]:
@@ -59,6 +59,9 @@ class DynamicRegistration:
     response_types = ["id_token"]
 
     grant_types = ["implicit", "client_credentials"]
+
+    def get_request_session(self):
+        return requests.Session()
 
     def get_client_name(self) -> str:
         """
@@ -229,13 +232,14 @@ class DynamicRegistration:
     def get_openid_configuration(self) -> Dict[str, Any]:
         openid_configuration_endpoint = self.get_openid_configuration_endpoint()
 
-        with requests.Session() as session:
+        with self.get_request_session() as session:
             resp = session.get(openid_configuration_endpoint)
             try:
                 openid_configuration = resp.json()
             except RequestException as e:
-                raise LtiException(
-                    f"The OpenID configuration data is invalid: {e}"
+                raise LtiServiceException(
+                    f"The OpenID configuration data is invalid: {e}",
+                    resp
                 ) from e
 
         return openid_configuration
@@ -255,7 +259,7 @@ class DynamicRegistration:
 
         openid_configuration = self.get_openid_configuration()
 
-        with requests.Session() as session:
+        with self.get_request_session() as session:
 
             assert (
                 "registration_endpoint" in openid_configuration
@@ -278,7 +282,13 @@ class DynamicRegistration:
                 json=registration_data,
             )
 
-            openid_registration = response.json()
+            if not response.ok:
+                raise LtiServiceException(f"The registration endpoint returned an error response.", response)
+
+            try:
+                openid_registration = response.json()
+            except requests.JSONDecodeError:
+                raise LtiServiceException(f"The registration endpoint did not return a JSON object.", response)
 
         conf_spec = "https://purl.imsglobal.org/spec/lti-platform-configuration"
         assert (
