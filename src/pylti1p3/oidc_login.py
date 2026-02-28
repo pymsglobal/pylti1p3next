@@ -1,11 +1,11 @@
 import typing as t
 import uuid
 from abc import ABCMeta, abstractmethod
+from collections.abc import Mapping
 from urllib.parse import urlencode
 
 from .actions import Action
 from .cookie import CookieService
-from .cookies_allowed_check import CookiesAllowedCheckPage
 from .exception import OIDCException
 from .launch_data_storage.base import LaunchDataStorage
 from .session import SessionService
@@ -34,10 +34,10 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
     _cookies_check: bool = False
     _cookies_check_loading_text: str = "Loading..."
     _cookies_unavailable_msg_main_text: str = (
-        "Your browser prohibits to save cookies in the iframes."
+        "Your browser does not allow cookies to be set in this page."
     )
     _cookies_unavailable_msg_click_text: str = (
-        "Click here to open content in the new tab."
+        "Click here to open the content in a new tab."
     )
     _state_params: t.Dict[str, object] = {}
 
@@ -153,8 +153,7 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
         """
         if self._cookies_check:
             if not self._is_new_window_request():
-                html = self.get_cookies_allowed_js_check()
-                return self.get_response(html)
+                return self.get_cookies_allowed_js_check()
 
         redirect_obj = self._prepare_redirect(launch_url)
         if js_redirect:
@@ -228,7 +227,7 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
         """
         return []
 
-    def get_cookies_allowed_js_check(self) -> str:
+    def get_cookies_allowed_js_check_params(self) -> tuple[str, Mapping[str, str]]:
         protocol = "https" if self._request.is_secure() else "http"
         params_lst = [
             "iss",
@@ -247,15 +246,10 @@ class OIDCLogin(t.Generic[REQ, TCONF, SES, COOK, RED]):
             if param_value:
                 params[param_key] = param_value
 
-        page = CookiesAllowedCheckPage(
-            params,
-            protocol,
-            self._cookies_unavailable_msg_main_text,
-            self._cookies_unavailable_msg_click_text,
-            self._cookies_check_loading_text,
-        )
+        return protocol, params
 
-        return page.get_html()
+    def get_cookies_allowed_js_check(self) -> RED:
+        raise NotImplementedError
 
     def set_launch_data_storage(
         self, data_storage: LaunchDataStorage[t.Any]
