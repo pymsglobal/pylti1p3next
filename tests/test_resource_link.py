@@ -7,6 +7,7 @@ from .flask_mixin import FlaskMixin
 
 
 class ResourceLinkBase(TestLinkBase):
+    __test__ = False
     # pylint: disable=abstract-method,no-member
 
     iss = "https://canvas.instructure.com"
@@ -192,7 +193,7 @@ class ResourceLinkBase(TestLinkBase):
             cache=cache,
         )
         launch_request = self._get_request(
-            login_request, login_response, request_is_secure=secure
+            login_request=login_request, login_response=login_response, request_is_secure=secure
         )
         message_launch_data = self._launch(launch_request, tool_conf, cache=cache)
         self.assertDictEqual(message_launch_data, self.expected_message_launch_data)
@@ -220,7 +221,7 @@ class ResourceLinkBase(TestLinkBase):
     def test_res_link_launch_invalid_public_key(self):
         tool_conf, login_request, login_response = self._make_oidc_login()
 
-        launch_request = self._get_request(login_request, login_response)
+        launch_request = self._get_request(login_request=login_request, login_response=login_response)
         with self.assertRaisesRegex(LtiException, "Invalid response"):
             self._launch(
                 launch_request, tool_conf, key_set_url_response="invalid_key_set"
@@ -233,13 +234,13 @@ class ResourceLinkBase(TestLinkBase):
         post_data.pop("state", None)
 
         launch_request = self._get_request(
-            login_request, login_response, post_data=post_data
+            login_request=login_request, login_response=login_response, post_data=post_data
         )
         with self.assertRaisesRegex(LtiException, "Missing state param"):
             self._launch(launch_request, tool_conf)
 
         launch_request = self._get_request(
-            login_request, login_response, empty_cookies=True
+            login_request=login_request, login_response=login_response, empty_cookies=True
         )
         with self.assertRaisesRegex(LtiException, "State not found"):
             self._launch(launch_request, tool_conf)
@@ -251,7 +252,7 @@ class ResourceLinkBase(TestLinkBase):
         post_data["id_token"] += ".absjdbasdj"
 
         launch_request = self._get_request(
-            login_request, login_response, post_data=post_data
+            login_request=login_request, login_response=login_response, post_data=post_data
         )
         with self.assertRaisesRegex(LtiException, "Invalid id_token"):
             self._launch(launch_request, tool_conf)
@@ -260,7 +261,7 @@ class ResourceLinkBase(TestLinkBase):
         post_data["id_token"] = "jbafjjsdbjasdabsjdbasdj1212121212.sdfhdhsf.sdfdsfdsf"
 
         launch_request = self._get_request(
-            login_request, login_response, post_data=post_data
+            login_request=login_request, login_response=login_response, post_data=post_data
         )
         with self.assertRaisesRegex(LtiException, "Invalid JWT format"):
             self._launch(launch_request, tool_conf)
@@ -272,7 +273,7 @@ class ResourceLinkBase(TestLinkBase):
         post_data["id_token"] += "jbafjjsdbjasdabsjdbasdj"
 
         launch_request = self._get_request(
-            login_request, login_response, post_data=post_data
+            login_request=login_request, login_response=login_response, post_data=post_data
         )
         with self.assertRaisesRegex(LtiException, "Can't decode id_token"):
             self._launch(launch_request, tool_conf)
@@ -309,7 +310,7 @@ class ResourceLinkBase(TestLinkBase):
 
         post_data = self.post_launch_data.copy()
         launch_request = self._get_request(
-            login_request, login_response, post_data=post_data
+            login_request=login_request, login_response=login_response, post_data=post_data
         )
 
         with self.assertRaisesRegex(LtiMessageValidationException, 'The "nonce" field is empty.'):
@@ -318,7 +319,7 @@ class ResourceLinkBase(TestLinkBase):
             )
 
         launch_request = self._get_request(
-            login_request, login_response, post_data=post_data, empty_session=True
+            login_request=login_request, login_response=login_response, post_data=post_data, empty_session=True
         )
 
         with self.assertRaisesRegex(LtiException, "Invalid Nonce"):
@@ -329,7 +330,7 @@ class ResourceLinkBase(TestLinkBase):
 
         post_data = self.post_launch_data.copy()
         launch_request = self._get_request(
-            login_request, login_response, post_data=post_data
+            login_request=login_request, login_response=login_response, post_data=post_data
         )
 
         with self.assertRaisesRegex(
@@ -344,7 +345,7 @@ class ResourceLinkBase(TestLinkBase):
 
         post_data = self.post_launch_data.copy()
         launch_request = self._get_request(
-            login_request, login_response, post_data=post_data
+            login_request=login_request, login_response=login_response, post_data=post_data
         )
 
         with self.assertRaisesRegex(
@@ -360,7 +361,7 @@ class ResourceLinkBase(TestLinkBase):
 
         post_data = self.post_launch_data.copy()
         launch_request = self._get_request(
-            login_request, login_response, post_data=post_data
+            login_request=login_request, login_response=login_response, post_data=post_data
         )
 
         with self.assertRaisesRegex(LtiException, "Incorrect version"):
@@ -370,8 +371,8 @@ class ResourceLinkBase(TestLinkBase):
 
 
 class TestDjangoResourceLink(DjangoMixin, ResourceLinkBase):
-    pass
+    __test__ = True
 
 
 class TestFlaskResourceLink(FlaskMixin, ResourceLinkBase):
-    pass
+    __test__ = True
