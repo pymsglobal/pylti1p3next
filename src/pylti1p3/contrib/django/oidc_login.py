@@ -1,6 +1,7 @@
 import typing as t
 from django.http import HttpResponse, HttpRequest  # type: ignore
 from django.shortcuts import render
+from django.template.exceptions import TemplateDoesNotExist
 from pylti1p3.oidc_login import OIDCLogin
 
 from .cookie import DjangoCookieService
