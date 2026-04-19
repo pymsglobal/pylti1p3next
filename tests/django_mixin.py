@@ -79,9 +79,7 @@ class DjangoMixin:
                 launch_url = "http://lti.django.test/launch/"
 
                 if enable_check_cookies:
-                    response_html = oidc_login.enable_check_cookies().redirect(
-                        launch_url
-                    )
+                    response_html = oidc_login.enable_check_cookies().redirect(launch_url)
                     self.assertTrue('<script type="text/javascript">' in response_html)
                     self.assertTrue("<body>" in response_html)
                     self.assertTrue(
