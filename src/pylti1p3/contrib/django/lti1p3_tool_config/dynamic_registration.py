@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict
 
 from django.urls import reverse_lazy
@@ -90,7 +91,7 @@ class DjangoDynamicRegistration(DynamicRegistration):
                 "auth_audience": openid_configuration["token_endpoint"],
                 "key_set_url": openid_configuration["jwks_uri"],
                 "tool_key": tool_key,
-                "deployment_ids": deployment_ids,
+                "deployment_ids": json.dumps(deployment_ids),
             },
         )
 
