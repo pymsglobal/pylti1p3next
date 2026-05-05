@@ -24,9 +24,7 @@ This library contains adapters for use with the Django and Flask web frameworks.
 Usage Examples
 =================
 
-Django: https://github.com/pymsglobal/pylti1p3next-django-example
-
-Flask: https://github.com/pymsglobal/pylti1p3next-flask-example
+Django: https://github.com/pymsglobal/django-lti1p3next-starter
 
 Configuration
 =============
