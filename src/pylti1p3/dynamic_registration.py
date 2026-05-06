@@ -283,12 +283,16 @@ class DynamicRegistration:
             )
 
             if not response.ok:
-                raise LtiServiceException(f"The registration endpoint returned an error response.", response)
+                raise LtiServiceException(
+                    "The registration endpoint returned an error response.",
+                    response)
 
             try:
                 openid_registration = response.json()
             except requests.JSONDecodeError:
-                raise LtiServiceException(f"The registration endpoint did not return a JSON object.", response)
+                raise LtiServiceException(
+                    "The registration endpoint did not return a JSON object.",
+                    response)
 
         conf_spec = "https://purl.imsglobal.org/spec/lti-platform-configuration"
         assert (

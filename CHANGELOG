@@ -1,3 +1,7 @@
+2.0.1
+==================
+* Fixed flake8 errors
+
 2.0.0 (2026-05-02)
 ==================
 * Initial release for this library

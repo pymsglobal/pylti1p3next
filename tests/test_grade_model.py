@@ -1,11 +1,6 @@
 import json
 import unittest
 from datetime import datetime
-import sys
-import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 from pylti1p3.grade import Grade
 from pylti1p3.exception import LtiException
 

@@ -1,9 +1,4 @@
 import unittest
-import sys
-import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 from pylti1p3.roles import (
     StudentRole, TeacherRole, StaffRole,
     TeachingAssistantRole, DesignerRole, ObserverRole, TransientRole,
