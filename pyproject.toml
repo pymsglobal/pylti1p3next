@@ -55,10 +55,22 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "flake8",
-    "pylint",
-    "pylint-django",
     "black",
+    "coverage",
+    "django",
+    "flake8",
+    "flask",
+    "jwcrypto",
+    "mock",
+    "mypy",
+    "parameterized",
+    "pyjwt",
+    "pylint",
+    "requests",
+    "requests-mock",
+    "types-requests",
+    "django-types",
+    "pylint-django",
 ]
 
 [project.urls]
