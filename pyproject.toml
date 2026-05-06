@@ -53,6 +53,14 @@ dependencies = [
     "typing_extensions~=4.2",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "flake8",
+    "pylint",
+    "pylint-django",
+    "black",
+]
+
 [project.urls]
 Homepage = "https://github.com/pymsglobal/pylti1p3next#readme"
 Issues = "https://github.com/pymsglobal/pylti1p3next/issues"
