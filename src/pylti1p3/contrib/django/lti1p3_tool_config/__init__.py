@@ -4,7 +4,6 @@ from pylti1p3.exception import LtiException
 from pylti1p3.registration import Registration
 from pylti1p3.tool_config.abstract import ToolConfAbstract
 
-
 default_app_config = (
     "pylti1p3.contrib.django.lti1p3_tool_config.apps.PyLTI1p3ToolConfig"
 )

@@ -3,7 +3,6 @@ import typing as t
 import typing_extensions as te
 from .exception import LineItemException
 
-
 TSubmissionReview = te.TypedDict(
     "TSubmissionReview",
     {

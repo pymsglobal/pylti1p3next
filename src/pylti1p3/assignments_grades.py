@@ -7,7 +7,6 @@ from .grade import Grade
 from .lineitem import TLineItem
 from .service_connector import ServiceConnector, TServiceConnectorResponse
 
-
 TAssignmentsGradersData = te.TypedDict(
     "TAssignmentsGradersData",
     {
