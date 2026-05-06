@@ -6,7 +6,6 @@ from ..exception import ToolConfException
 from ..registration import Registration
 from ..request import Request
 
-
 REQ = t.TypeVar("REQ", bound=Request)
 
 

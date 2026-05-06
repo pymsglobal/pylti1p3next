@@ -3,7 +3,6 @@ import json
 import typing as t
 from .exception import LtiException
 
-
 TExtraClaims = t.Mapping[str, t.Any]
 
 
