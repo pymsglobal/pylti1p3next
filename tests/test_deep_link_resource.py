@@ -1,5 +1,6 @@
 from pylti1p3.lineitem import LineItem
 from pylti1p3.deep_link_resource import DeepLinkResource
+from pylti1p3.exception import LtiException
 import unittest
 import sys
 import os
@@ -20,6 +21,7 @@ class TestDeepLinkResourceDefaults(unittest.TestCase):
         self.assertIsNone(r.get_url())
         self.assertIsNone(r.get_lineitem())
         self.assertIsNone(r.get_icon_url())
+        self.assertIsNone(r.get_html())
 
     def test_default_custom_params_is_empty(self):
         self.assertEqual(DeepLinkResource().get_custom_params(), {})
@@ -52,6 +54,22 @@ class TestDeepLinkResourceToDict(unittest.TestCase):
         self.assertNotIn("lineItem", d)
         self.assertNotIn("icon", d)
         self.assertNotIn("custom", d)
+        self.assertNotIn("html", d)
+
+    def test_to_dict_html(self):
+        r = DeepLinkResource().set_type("html").set_html("<div>Test Element</div>")
+        d = r.to_dict()
+        self.assertEqual(d["html"], "<div>Test Element</div>")
+
+    def test_to_dict_html_no_content(self):
+        r = DeepLinkResource().set_type("html")
+        with self.assertRaises(LtiException):
+            r.to_dict()
+
+    def test_to_dict_link_html(self):
+        r = DeepLinkResource().set_type("link").set_html("<div>Test Element</div>")
+        d = r.to_dict()
+        self.assertEqual(d["embed"], {"html": "<div>Test Element</div>"})
 
     def test_to_dict_with_icon_url(self):
         r = DeepLinkResource().set_icon_url("https://example.com/icon.png")
