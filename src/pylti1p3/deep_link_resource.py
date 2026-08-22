@@ -99,13 +99,13 @@ class DeepLinkResource:
             res["lineItem"] = line_item
 
         if self._html and self._type == "link":
-            res["embed"] = {
-                "html": self._html
-            }
+            res["embed"] = {"html": self._html}
 
         elif self._type == "html":
             if self._html is None:
-                raise LtiException("DeepLinkResource of type 'html' has no defined HTML")
+                raise LtiException(
+                    "DeepLinkResource of type 'html' has no defined HTML"
+                )
 
             res["html"] = self._html
 
